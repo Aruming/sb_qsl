@@ -85,7 +85,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                         siteUser.username.contains(keyword)
                                 .or(siteUser.email.contains(keyword))
                 )
-                .offset(pageable.getOffset()) // 몇개를 건너 띄어야 하는지 LIMIT {1}, ?
+                .offset(pageable.getOffset()) // 몇개를 건너 뛰어야 하는지 LIMIT {1}, ?
                 .limit(pageable.getPageSize()); // 한페이지에 몇개가 보여야 하는지 LIMIT ?, {1}
 
         for (Sort.Order o : pageable.getSort()) {
@@ -95,9 +95,15 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         List<SiteUser> users = usersQuery.fetch();
 
-        // return new PageImpl<>(users, pageable, usersQuery.fetchCount()); // 아래와 거의 동일
+        JPAQuery<Long> usersCountQuery = jpaQueryFactory
+                .select(siteUser.count())
+                .from(siteUser)
+                .where(
+                        siteUser.username.contains(keyword)
+                                .or(siteUser.email.contains(keyword))
+                );
 
-        return PageableExecutionUtils.getPage(users, pageable, usersQuery::fetchCount);
+        return PageableExecutionUtils.getPage(users, pageable, usersCountQuery::fetchOne);
     }
 
 
