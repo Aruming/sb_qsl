@@ -78,7 +78,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
     @Override
     public Page<SiteUser> searchQsl(String keyword, Pageable pageable) {
-        List<SiteUser> users = jpaQueryFactory
+        JPAQuery<SiteUser> usersQuery = jpaQueryFactory
                 .select(siteUser)
                 .from(siteUser)
                 .where(
@@ -86,9 +86,14 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                                 .or(siteUser.email.contains(keyword))
                 )
                 .offset(pageable.getOffset()) // 몇개를 건너 띄어야 하는지 LIMIT {1}, ?
-                .limit(pageable.getPageSize()) // 한페이지에 몇개가 보여야 하는지 LIMIT ?, {1}
-                .orderBy(siteUser.id.asc())
-                .fetch();
+                .limit(pageable.getPageSize()); // 한페이지에 몇개가 보여야 하는지 LIMIT ?, {1}
+
+        for (Sort.Order o : pageable.getSort()) {
+            PathBuilder pathBuilder = new PathBuilder(siteUser.getType(), siteUser.getMetadata());
+            usersQuery.orderBy(new OrderSpecifier(o.isAscending() ? Order.ASC : Order.DESC, pathBuilder.get(o.getProperty())));
+        }
+
+        List<SiteUser> users = usersQuery.fetch();
 
         LongSupplier totalSupplier = () -> 2;
 
