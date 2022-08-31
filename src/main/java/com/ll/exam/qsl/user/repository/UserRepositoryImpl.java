@@ -109,7 +109,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<SiteUser> getQslUsersByInterestKeyword(String interest) {
+    public List<SiteUser> getQslUsersByInterestKeyword(String keyword) {
         /*
         SELECT SU.*
         FROM site_user AS SU
@@ -119,9 +119,14 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         ON IK.content = SUIK.interest_keywords_content
         WHERE IK.content = "축구";
         */
+        QInterestKeyword IK = new QInterestKeyword("IK");
+
         return jpaQueryFactory
                 .selectFrom(siteUser)
-                .innerJoin(siteUser.interestKeywords)
+                .innerJoin(siteUser.interestKeywords, IK)
+                .where(
+                        IK.content.eq(keyword)
+                )
                 .fetch();
     }
 
