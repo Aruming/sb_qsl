@@ -4,9 +4,7 @@ import com.ll.exam.qsl.interestKeyword.entity.InterestKeyword;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -18,7 +16,6 @@ import java.util.Set;
 public class SiteUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "SiteUser_ID")
     private Long id;
 
     @Column(unique = true)
@@ -30,8 +27,8 @@ public class SiteUser {
     private String email;
 
     @Builder.Default
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-    Set<InterestKeyword> interestKeywords = new HashSet<>();
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    private Set<InterestKeyword> interestKeywords = new HashSet<>();
 
     @Builder.Default
     @ManyToMany(cascade = CascadeType.ALL)
@@ -45,10 +42,14 @@ public class SiteUser {
         interestKeywords.add(new InterestKeyword(this, keywordContent));
     }
 
+    public void removeInterestKeywordContent(String keywordContent) {
+        interestKeywords.remove(new InterestKeyword(this, keywordContent));
+    }
+
     public void follow(SiteUser following) {
-        if(this == following) return;
-        if(following == null) return;
-        if(this.getId() == following.getId()) return;
+        if (this == following) return;
+        if (following == null) return;
+        if (this.getId() == following.getId()) return;
 
         // 유튜버(following)이 나(follower)를 구독자로 등록
         following.getFollowers().add(this);

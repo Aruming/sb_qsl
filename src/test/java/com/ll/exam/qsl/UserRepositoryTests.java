@@ -21,10 +21,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@ActiveProfiles("test") //테스트 모드 활성화
 // 이렇게 클래스 @Transactional를 붙이면, 클래스의 각 테스트케이스에 전부 @Transactional 붙은 것과 동일
 // @Test + @Transactional 조합은 자동으로 롤백을 유발시킨다.
 @Transactional
+@ActiveProfiles("test") // 테스트 모드 활성화
 class UserRepositoryTests {
     @Autowired
     private UserRepository userRepository;
@@ -70,8 +70,8 @@ class UserRepositoryTests {
     }
 
     @Test
-    @DisplayName("모든 회원의 수")
-    void t4(){
+    @DisplayName("모든 회원 수")
+    void t4() {
         long count = userRepository.getQslCount();
 
         assertThat(count).isGreaterThan(0);
@@ -79,7 +79,7 @@ class UserRepositoryTests {
 
     @Test
     @DisplayName("가장 오래된 회원 1명")
-    void t5(){
+    void t5() {
         SiteUser u1 = userRepository.getQslUserOrderByIdAscOne();
 
         assertThat(u1.getId()).isEqualTo(1L);
@@ -138,11 +138,11 @@ class UserRepositoryTests {
     }
 
     @Test
-    @DisplayName("검색, Page 리턴, id DESC, pageSize=1, page=0")
+    @DisplayName("검색, Page 리턴, id ASC, pageSize=1, page=0")
     void t8() {
         long totalCount = userRepository.count();
         int pageSize = 1; // 한 페이지에 보여줄 아이템 개수
-        int totalPages = (int)Math.ceil(totalCount / (double)pageSize);
+        int totalPages = (int) Math.ceil(totalCount / (double) pageSize);
         int page = 1;
         String kw = "user";
 
@@ -165,29 +165,6 @@ class UserRepositoryTests {
         assertThat(u.getUsername()).isEqualTo("user2");
         assertThat(u.getEmail()).isEqualTo("user2@test.com");
         assertThat(u.getPassword()).isEqualTo("{noop}1234");
-
-        // 검색어 : user1
-        // 한 페이지에 나올 수 있는 아이템 수 : 1개
-        // 현재 페이지 : 1
-        // 정렬 : id 역순
-
-        // 내용 가져오는 SQL
-        /*
-        SELECT site_user.*
-        FROM site_user
-        WHERE site_user.username LIKE '%user%'
-        OR site_user.email LIKE '%user%'
-        ORDER BY site_user.id ASC
-        LIMIT 1, 1
-         */
-
-        // 전체 개수 계산하는 SQL
-        /*
-        SELECT COUNT(*)
-        FROM site_user
-        WHERE site_user.username LIKE '%user%'
-        OR site_user.email LIKE '%user%'
-         */
     }
 
     @Test
@@ -195,7 +172,7 @@ class UserRepositoryTests {
     void t9() {
         long totalCount = userRepository.count();
         int pageSize = 1; // 한 페이지에 보여줄 아이템 개수
-        int totalPages = (int)Math.ceil(totalCount / (double)pageSize);
+        int totalPages = (int) Math.ceil(totalCount / (double) pageSize);
         int page = 1;
         String kw = "user";
 
@@ -221,7 +198,7 @@ class UserRepositoryTests {
     }
 
     @Test
-    @DisplayName("회원에게 관심사를 등록할 수 있다")
+    @DisplayName("회원에게 관심사를 등록할 수 있다.")
     void t10() {
         SiteUser u2 = userRepository.getQslUser(2L);
 
@@ -234,7 +211,7 @@ class UserRepositoryTests {
     }
 
     @Test
-    @DisplayName("축구에 관심 있는 회원 검색")
+    @DisplayName("축구에 관심이 있는 회원들 검색")
     void t11() {
         List<SiteUser> users = userRepository.getQslUsersByInterestKeyword("축구");
 
@@ -269,7 +246,7 @@ class UserRepositoryTests {
         SiteUser u1 = userRepository.getQslUser(1L);
         SiteUser u2 = userRepository.getQslUser(2L);
 
-        u2.follow(u1);
+        u1.follow(u2);
 
         userRepository.save(u2);
     }
@@ -287,7 +264,6 @@ class UserRepositoryTests {
 
     @Test
     @DisplayName("특정회원의 follower들과 following들을 모두 알 수 있어야 한다.")
-    @Rollback(false)
     void t15() {
         SiteUser u1 = userRepository.getQslUser(1L);
         SiteUser u2 = userRepository.getQslUser(2L);
@@ -309,5 +285,13 @@ class UserRepositoryTests {
         // following
         // u2가 구독중인 회원 : 0
         assertThat(u2.getFollowings().size()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("u1은 더 이상 농구에 관심이 없습니다.")
+    void t16() {
+        SiteUser u1 = userRepository.getQslUser(1L);
+
+        u1.removeInterestKeywordContent("농구");
     }
 }
