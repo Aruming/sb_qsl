@@ -4,7 +4,9 @@ import com.ll.exam.qsl.interestKeyword.entity.InterestKeyword;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -16,6 +18,7 @@ import java.util.Set;
 public class SiteUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "SiteUser_ID")
     private Long id;
 
     @Column(unique = true)
@@ -26,8 +29,8 @@ public class SiteUser {
     @Column(unique = true)
     private String email;
 
-    @ManyToMany(cascade = CascadeType.ALL)
     @Builder.Default
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     Set<InterestKeyword> interestKeywords = new HashSet<>();
 
     @Builder.Default
@@ -39,7 +42,7 @@ public class SiteUser {
     private Set<SiteUser> followings = new HashSet<>();
 
     public void addInterestKeywordContent(String keywordContent) {
-        interestKeywords.add(new InterestKeyword(keywordContent));
+        interestKeywords.add(new InterestKeyword(this, keywordContent));
     }
 
     public void follow(SiteUser following) {
