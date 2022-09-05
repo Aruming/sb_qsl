@@ -294,4 +294,20 @@ class UserRepositoryTests {
 
         u1.removeInterestKeywordContent("농구");
     }
+
+    @Test
+    @DisplayName("팔로우중인 사람들의 관심사")
+    void t17() {
+        SiteUser u = userRepository.getQslUser(8L);
+
+        List<String> keywordContents = userRepository.getKeywordContentsByFollowingsOf(u);
+
+        assertThat(keywordContents.size()).isEqualTo(5);
+
+        u = userRepository.getQslUser(7L);
+
+        keywordContents = userRepository.getKeywordContentsByFollowingsOf(u);
+
+        assertThat(keywordContents.size()).isEqualTo(4);
+    }
 }
